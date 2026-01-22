@@ -1,4 +1,4 @@
-name: ctx1_gen1_dep8_batch1_eplb0_mtp0
+name: ctx1_gen6_tp8_batch8_eplb0_mtp3_8
 
 model:
   path: "dsr1-fp8"
@@ -11,8 +11,8 @@ resources:
   prefill_workers: 1
   gpus_per_prefill: 8
 
-  decode_workers: 1
-  decode_nodes: 1
+  decode_workers: 6
+  decode_nodes: 6
   gpus_per_decode: 8
 
   gpus_per_node: 8
@@ -48,16 +48,14 @@ backend:
       cache_transceiver_config:
         backend: DEFAULT
         max_tokens_in_buffer: 8320
-      cuda_graph_config:
-        enable_padding: true
-        max_batch_size: 64
+      cuda_graph_config: null
       disable_overlap_scheduler: true
-      enable_attention_dp: false
+      enable_attention_dp: true
       kv_cache_config:
         dtype: fp8
         enable_block_reuse: false
-        free_gpu_memory_fraction: 0.8
-      max_batch_size: 64
+        free_gpu_memory_fraction: 0.2
+      max_batch_size: 1
       max_num_tokens: 8320
       max_seq_len: 8320
       moe_config:
@@ -65,31 +63,39 @@ backend:
       moe_expert_parallel_size: 1
       pipeline_parallel_size: 1
       print_iter_log: true
+      speculative_config:
+        decoding_type: MTP
+        num_nextn_predict_layers: 3
       tensor_parallel_size: 8
 
 
     decode:
       allreduce_strategy: AUTO
+      attention_dp_config:
+        enable_balance: true
       cache_transceiver_config:
         backend: DEFAULT
         max_tokens_in_buffer: 8320
       cuda_graph_config:
         enable_padding: true
-        max_batch_size: 1
+        max_batch_size: 8
       disable_overlap_scheduler: false
       enable_attention_dp: false
       kv_cache_config:
         dtype: fp8
         enable_block_reuse: false
         free_gpu_memory_fraction: 0.8
-      max_batch_size: 1
-      max_num_tokens: 512
+      max_batch_size: 8
+      max_num_tokens: 32
       max_seq_len: 9344
       moe_config:
         backend: TRTLLM
       moe_expert_parallel_size: 1
       pipeline_parallel_size: 1
       print_iter_log: true
+      speculative_config:
+        decoding_type: MTP
+        num_nextn_predict_layers: 3
       stream_interval: 20
       tensor_parallel_size: 8
 
@@ -98,7 +104,7 @@ benchmark:
   type: "sa-bench"
   isl: 8192
   osl: 1024
-  concurrencies: [1]
+  concurrencies: [8]
   req_rate: "inf"
 
 frontend:
